@@ -1,109 +1,127 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <time.h>
-#include "omp.h"
+#include <omp.h>
 
-#define MAX_NODES 4039
-#define MAX_EDGES 88234
+#define MAX_NODES 8717
+#define MAX_EDGES 31525
+#define NUM_THREADS 16
 
-void dijkstra(int graph[MAX_NODES][MAX_NODES], int num_nodes, int num_threads, double* elapsed_time) {
-    int distances[MAX_NODES];
-    int visited[MAX_NODES];
+typedef struct {
+    int node;
+    int cost;
+} Edge;
 
-    // Initialize distances and visited arrays
-    for (int i = 0; i < MAX_NODES; i++) {
-        distances[i] = INT_MAX;
-        visited[i] = 0;
+typedef struct {
+    int node;
+    int distance;
+} NodeDistance;
+
+int **graph;
+int *distances;
+int *visited;
+
+
+void initialize(int numNodes) {
+    distances = (int*)malloc(numNodes * sizeof(int));
+    visited = (int*)malloc(numNodes * sizeof(int));
+
+    if (distances == NULL || visited == NULL) {
+        printf("Memory allocation failed\n");
+        exit(1);
     }
 
-    // Set distance to source node as 0
-    distances[0] = 0;
+    for (int i = 0; i < numNodes; i++) {
+        distances[i] = 222;
+        visited[i] = 0;
+    }
+}
+int findMinDistanceNode() {
+    int minDistance = INT_MAX;
+    int minNode = -1;
 
-    // Perform Dijkstra's algorithm
-    #pragma omp parallel num_threads(num_threads)
-    {
-        for (int i = 0; i < num_nodes - 1; i++) {
-            int min_distance = INT_MAX;
-            int min_index = -1;
-
-            // Find the minimum distance vertex
-            #pragma omp for
-            for (int j = 0; j < num_nodes; j++) {
-                if (!visited[j] && distances[j] < min_distance) {
-                    min_distance = distances[j];
-                    min_index = j;
+    #pragma omp parallel for num_threads(NUM_THREADS)
+    for (int i = 0; i < MAX_NODES; i++) {
+        if (!visited[i] && distances[i] < minDistance) {
+            #pragma omp critical
+            {
+                if (distances[i] < minDistance) {
+                    minDistance = distances[i];
+                    minNode = i;
                 }
             }
+        }
+    }
 
-            // Mark the selected vertex as visited
-            #pragma omp single
-            visited[min_index] = 1;
+    return minNode;
+}
 
-            // Update distances of adjacent vertices
-            #pragma omp for
-            for (int j = 0; j < num_nodes; j++) {
-                if (!visited[j] && graph[min_index][j] && distances[min_index] != INT_MAX) {
-                    if (distances[min_index] + 1 < distances[j]) {
-                        distances[j] = distances[min_index] + 1;
+void dijkstra(int startNode) {
+    distances[startNode] = 0;
+
+    for (int count = 0; count < MAX_NODES - 1; count++) {
+        int u = findMinDistanceNode();
+        visited[u] = 1;
+
+        #pragma omp parallel for num_threads(NUM_THREADS)
+        for (int v = 0; v < MAX_NODES; v++) {
+            if (!visited[v] && graph[u][v] && distances[u] != INT_MAX && distances[u] + graph[u][v] < distances[v]) {
+                #pragma omp critical
+                {
+                    if (distances[u] + graph[u][v] < distances[v]) {
+                        distances[v] = distances[u] + graph[u][v];
                     }
                 }
             }
         }
     }
-
 }
 
 int main() {
-    int graph[MAX_NODES][MAX_NODES];
-    int num_nodes, num_edges;
-    double elapsed_time_seq, elapsed_time_parallel;
-    FILE* file;
-    FILE* result_file;
-    int i, j, num_threads;
 
-    // Read graph information from file
-    file = fopen("C:/Users/Anubhav/Desktop/facebook_combined.txt", "r");
+    FILE *file = fopen("GUN06.txt", "r");
     if (file == NULL) {
-        printf("Failed to open graph.txt file.\n");
+        printf("Error opening file\n");
         return 1;
     }
+    printf("Hello\n");
 
-    fscanf(file, "%d %d", &num_nodes, &num_edges);
+    initialize(MAX_NODES);
+printf("This\n");
 
-    for (i = 0; i < MAX_NODES; i++) {
-        for (j = 0; j < MAX_NODES; j++) {
-            graph[i][j] = 0;
-        }
+
+graph = (int**)malloc(MAX_NODES * sizeof(int*));
+if (graph == NULL) {
+    printf("Memory allocation failed\n");
+    exit(1);
+}
+
+
+for (int i = 0; i < MAX_NODES; i++) {
+    graph[i] = (int*)malloc(MAX_NODES * sizeof(int));
+    if (graph[i] == NULL) {
+        printf("Memory allocation failed\n");
+        exit(1);
     }
+}
 
-    for (i = 0; i < num_edges; i++) {
-        int u, v;
-        fscanf(file, "%d %d", &u, &v);
-        graph[u][v] = 1;
-    }
+
+
+int source, destination;
+while (fscanf(file, "%d %d", &source, &destination) == 2) {
+    graph[source][destination] = 1;
+}
+
 
     fclose(file);
 
-    // Sequential Execution
-    dijkstra(graph, num_nodes, 1, &elapsed_time_seq);
+    double start_time = omp_get_wtime();
 
-    // Parallel Execution with different number of threads
-    result_file = fopen("result.txt", "w");
-    if (result_file == NULL) {
-        printf("Failed to open result.csv file.\n");
-        return 1;
-    }
+    dijkstra(0);
 
-    fprintf(result_file, "Graph name,#nodes,#edges,seq time(seconds),parallel times with 1,2,4,8,16 threads\n");
-    fprintf(result_file, "Graph1,%d,%d,%f", num_nodes, num_edges, elapsed_time_seq);
+    double end_time = omp_get_wtime();
 
-    for (num_threads = 1; num_threads <= 16; num_threads *= 2) {
-        dijkstra(graph, num_nodes, num_threads, &elapsed_time_parallel);
-        fprintf(result_file, ",%f", elapsed_time_parallel);
-    }
-
-    fclose(result_file);
+    printf("Execution time: %f seconds\n", end_time - start_time);
 
     return 0;
 }
