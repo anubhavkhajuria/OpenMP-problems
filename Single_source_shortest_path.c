@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <time.h>
-#include <omp.h>
+#include "omp.h"
 
 #define MAX_NODES 4039
 #define MAX_EDGES 88234
