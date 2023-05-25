@@ -11,16 +11,22 @@ typedef struct {
     long int distance;
 } NodeDistance;
 
+
+
 NodeDistance distances[MAX_NODES];
 char visited[MAX_NODES] = {0};
 
 void initialize(long int numNodes) {
+    
     for (long int i = 0; i < numNodes; i++) {
         distances[i].node = i;
         distances[i].distance = (i == 0) ? 0 : INT_MAX;
         visited[i] = 0;
+   
     }
 }
+
+
 
 long int findMinDistanceNode() {             // Calculate Minimum distance from the start node 
     long int minDistance = INT_MAX;
@@ -37,6 +43,8 @@ long int findMinDistanceNode() {             // Calculate Minimum distance from 
     return minNode;
 }
 
+
+
 void dijkstra(long int startNode) {                    // Implement Djikstra's algorithm
     distances[startNode].distance = 0;
 
@@ -52,6 +60,8 @@ void dijkstra(long int startNode) {                    // Implement Djikstra's a
         }
     }
 }
+
+
 
 int main() {
     FILE *file = fopen("Google.txt", "r");               // Open input file 
@@ -73,7 +83,6 @@ int main() {
     fclose(file);
 
     double start_time = omp_get_wtime();
-
     dijkstra(0);
 
     double end_time = omp_get_wtime();
