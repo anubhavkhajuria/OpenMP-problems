@@ -3,45 +3,45 @@
 #include <limits.h>
 #include <omp.h>
 
-#define MAX_NODES 8717
-#define MAX_EDGES 31525
-#define NUM_THREADS 16
+#define MAX_NODES 75888   //Initialize the number of nodes
+#define MAX_EDGES 508838  //Initialize the number of edges
+#define NUM_THREADS 4     //Initialize the thread count
 
 typedef struct {
-    int node;
-    int cost;
+   long int node;
+   long int cost;
 } Edge;
 
 typedef struct {
-    int node;
-    int distance;
+   long int node;
+   long int distance;
 } NodeDistance;
 
-int **graph;
-int *distances;
-int *visited;
+long int **graph;
+long int *distances;
+long int *visited;
 
 
-void initialize(int numNodes) {
-    distances = (int*)malloc(numNodes * sizeof(int));
-    visited = (int*)malloc(numNodes * sizeof(int));
+void initialize(long int numNodes) {
+    distances = (long int*)malloc(numNodes * sizeof(long int));
+    visited = (long int *)malloc(numNodes * sizeof(long int));
 
     if (distances == NULL || visited == NULL) {
         printf("Memory allocation failed\n");
         exit(1);
     }
 
-    for (int i = 0; i < numNodes; i++) {
+    for (long int i = 0; i < numNodes; i++) {
         distances[i] = 222;
         visited[i] = 0;
     }
 }
-int findMinDistanceNode() {
-    int minDistance = INT_MAX;
-    int minNode = -1;
+long int findMinDistanceNode() {
+    long int minDistance = INT_MAX;
+    long int minNode = -1;
 
     #pragma omp parallel for num_threads(NUM_THREADS)
-    for (int i = 0; i < MAX_NODES; i++) {
+    for (long int i = 0; i < MAX_NODES; i++) {
         if (!visited[i] && distances[i] < minDistance) {
             #pragma omp critical
             {
@@ -56,15 +56,15 @@ int findMinDistanceNode() {
     return minNode;
 }
 
-void dijkstra(int startNode) {
+void dijkstra(long int startNode) {   `     //Implement Dijkstra's algorithm to find the shortest path
     distances[startNode] = 0;
 
-    for (int count = 0; count < MAX_NODES - 1; count++) {
-        int u = findMinDistanceNode();
+    for (long int count = 0; count < MAX_NODES - 1; count++) {
+        long int u = findMinDistanceNode();
         visited[u] = 1;
 
         #pragma omp parallel for num_threads(NUM_THREADS)
-        for (int v = 0; v < MAX_NODES; v++) {
+        for (long int v = 0; v < MAX_NODES; v++) {
             if (!visited[v] && graph[u][v] && distances[u] != INT_MAX && distances[u] + graph[u][v] < distances[v]) {
                 #pragma omp critical
                 {
@@ -79,7 +79,7 @@ void dijkstra(int startNode) {
 
 int main() {
 
-    FILE *file = fopen("GUN06.txt", "r");
+    FILE *file = fopen("Large_data.txt", "r");          //Read the file which is placed in the same directory in which the code is present.
     if (file == NULL) {
         printf("Error opening file\n");
         return 1;
@@ -87,41 +87,69 @@ int main() {
     printf("Hello\n");
 
     initialize(MAX_NODES);
-printf("This\n");
+    printf("This\n");
 
 
-graph = (int**)malloc(MAX_NODES * sizeof(int*));
+graph = (long int**)malloc(MAX_NODES * sizeof(long int*));              //Dynamically allocate memory
 if (graph == NULL) {
     printf("Memory allocation failed\n");
     exit(1);
 }
+printf("Check 1\n");
 
-
-for (int i = 0; i < MAX_NODES; i++) {
-    graph[i] = (int*)malloc(MAX_NODES * sizeof(int));
+for (long int i = 0; i < MAX_NODES; i++) {
+    graph[i] = (long int *)malloc(MAX_NODES * sizeof(long int));
     if (graph[i] == NULL) {
         printf("Memory allocation failed\n");
         exit(1);
     }
 }
 
+printf("Check 2\n");
 
+long int source, destination;
+while (fscanf(file, "%ld %ld", &source, &destination) == 2) {
+    
+    
+    
+    if (source < 0 || source >= MAX_NODES) {                                //Check whether the source node is valid
+        printf("Invalid node index: %ld\n", source);
+        continue;                                                           // Skip this iteration and proceed to the next iteration
+    }
 
-int source, destination;
-while (fscanf(file, "%d %d", &source, &destination) == 2) {
+    
+    
+    if (destination < 0 || destination >= MAX_NODES) {                       //Check whether the destination node is valid
+        printf("Invalid node index: %ld\n", destination);
+        continue;                                                           // Skip this iteration and proceed to the next iteration
+    }
+
+    
+    if (graph[source] == NULL) {
+        graph[source] = (long int*)malloc(MAX_NODES * sizeof(long int));
+        if (graph[source] == NULL) {
+            printf("Memory allocation failed for graph[%ld]\n", source);
+            continue;                                                           // Skip this iteration and proceed to the next iteration
+        }
+        for (long int i = 0; i < MAX_NODES; i++) {
+            graph[source][i] = 0;                                               // Initialize the newly allocated row
+        }
+    }
+
     graph[source][destination] = 1;
 }
 
 
-    fclose(file);
 
+    fclose(file);
+    printf("Check 3\n");
     double start_time = omp_get_wtime();
 
     dijkstra(0);
 
     double end_time = omp_get_wtime();
-
-    printf("Execution time: %f seconds\n", end_time - start_time);
+    printf("Check 4\n");
+    printf("Execution time: %f seconds\n", end_time - start_time);                  //Time taken to execute the program.
 
     return 0;
 }
