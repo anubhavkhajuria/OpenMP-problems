@@ -82,3 +82,6 @@ int main() {
 
     return 0;
 }
+
+
+// The dataset is google web graph from https://snap.stanford.edu/data/ with 875713 nodes and 5105039 edges.
