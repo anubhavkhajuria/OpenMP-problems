@@ -1,7 +1,7 @@
 
 # Project Title
 
-This is a repo on SSSP using openMP. The goal is to parallelize SSSP algorithm so that it can be computationally faster and can be used to get the shortest path in large graphs with more than million or so nodes.
+This is an implementation SSSP using openMP. The goal is to parallelize SSSP algorithm so that it can be computationally faster and can be used to get the shortest path in large graphs with more than million or so nodes.
 
  
 - Note :- The start node is 0 in most of the graphs.
