@@ -49,4 +49,16 @@ To run program, run the following command:-
   
   ./SSSp
 ```
+For networkx implementation u need to have python installed in your system as well as networkx
+
+```bash
+sudo apt update
+
+sudo apt install python3
+
+sudo apt install python3-pip
+
+pip install networkx
+
+```
 
