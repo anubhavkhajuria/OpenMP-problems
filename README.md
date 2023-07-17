@@ -25,7 +25,7 @@ OpenMP documentation [click here](https://www.openmp.org/resources/tutorials-art
 Clone the project
 
 ```bash
-  git clone https://github.com/anubhavkhajuria/OpenMP-problems/blob/6b813e52f59770c08113629204c48f670886c89c/Single_source_shortest_path.c
+  git clone https://github.com/anubhavkhajuria/OpenMP-problems.git
 ```
 
 Go to the project directory
