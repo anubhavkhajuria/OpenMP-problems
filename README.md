@@ -20,12 +20,32 @@ OpenMP documentation [click here](https://www.openmp.org/resources/tutorials-art
 
 
 
-## Run
+## Run Locally
+
+Clone the project
+
+```bash
+  git clone https://github.com/anubhavkhajuria/OpenMP-problems/blob/6b813e52f59770c08113629204c48f670886c89c/Single_source_shortest_path.c
+```
+
+Go to the project directory
+
+```bash
+  cd my-project
+```
+
+Install dependencies
+
+```bash
+  sudo apt-get install libomp-dev
+
+```
+
 
 To run program, run the following command:-
 
 ```bash
-  gcc -fopenmp SSSp.c -o SSSp
+  gcc -fopenmp Single_source_shortest_path.c -o SSSp
   
   ./SSSp
 ```
