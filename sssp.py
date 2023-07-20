@@ -1,74 +1,88 @@
-#implementing the algorithm
 import time
-def dijkstra(graph, start):
-    distances = {node: float('inf') for node in graph}
-    distances[start] = 0
+
+import heapq
+
+
+def Single_source_shortest_path(graph, source):             #takes graph and source ass an input and returns the shortest distance from source to every node
+    distances = {node: float('inf') for node in graph}         #initializing distance to every node to inf
+    distances[source] = 0                   
     visited = set()
-    
-    while len(visited) < len(graph):
-        current_node = None
-        min_distance = float('inf')
-        
-        # find the unvisited node with the minimum distance
-        for node in graph:
-            if node not in visited and distances[node] < min_distance:
-                current_node = node
-                min_distance = distances[node]
-        
+    fringe = [(0, source)]                                      # will Store all possibe node that can be visited from current node
+
+    while fringe:
+        current_distance, current_node = heapq.heappop(fringe)      #returns the shortest distance
+
+        if current_node in visited:
+            continue
+
         visited.add(current_node)
-        
-        #updating the distance for neighboring nodes
-        if current_node in graph:
-            for neighbor in graph[current_node]:
-                distance = distances[current_node] + 1  #considering the weights of all edges is 1
-                
-                if distance < distances[neighbor]:
-                    distances[neighbor] = distance
-    
+        for neighbor in graph[current_node]:                        
+            new_distance = current_distance + 1
+            if new_distance < distances[neighbor]:
+                distances[neighbor] = new_distance               
+                heapq.heappush(fringe, (new_distance, neighbor))
+
     return distances
 
-def read_graph_from_file(file_name):  # function to read the input from a file
-    graph = {}
-    with open(file_name, 'r') as file:
-        for line in file:
-            node, neighbor = line.split()
-            
-            if node not in graph:       #incase the data is missing from the file
-                graph[node] = []
-            
-            if neighbor not in graph:      #incase the data is missing from the file
-                graph[neighbor] = []
-                
-            
-            graph[node].append(neighbor)
-            graph[neighbor].append(node)  #as it is an undirected graph
-            
-    return graph
+
+start_node = 0
 
 
 
-def sortt(shortest_distances):        #sorting the nodes according to the distance from the start node
-    return dict(sorted(shortest_distances.items(), key=lambda x:x[1]))
-#function to write the output in a file
 
 
-
-def write_output_to_file(output_file, shortest_distances,time_taken):
-    with open(output_file, 'w') as file: 
-        file.write(f"Time taken to complete the computation :- {time_taken}\n")                   
+def write_output_to_file(output_file, shortest_distances,time_taken):           #function to write output to the file 
+    with open(output_file, 'w') as file:   
+        file.write(f"Time taken to complete the computation:- {time_taken}\n")                 
         file.write(f"Shortest distances from node {start_node}:\n")
         for node, distance in shortest_distances.items():
-            file.write(f"Node {node}: {distance}\n")
+            if(distance != float('inf') ):
+                file.write(f"Node {node}: {distance}\n")
 
 
-input_file = 'Slash.txt'  # Input file which contains source and destination
-output_file = 'output.txt'  # output file in which the result will be stored
-graph = read_graph_from_file(input_file)
-start_node = '0'
+
+def read_graph(file):
+
+    if file is None:
+        exit(1)         #Some error in opening the file
+    d = {}
+    while True:
+        line = file.readline()
+        if not line:
+            break
+        node, neighbor = map(int,line.split())
+        if(node in d):
+            x = d[node]
+            x.append(neighbor)
+            if(neighbor in d):
+                y = d[neighbor]
+                y.append(node)
+            else:
+                d[neighbor] = [node]
+
+        else:
+            d[node] = [neighbor]
+            if(neighbor in d):
+                y = d[neighbor]
+                y.append(node)
+            else:
+                d[neighbor] = [node]
+    return d
+
+
+
+file = open("facebook_combined.txt",'r')            #Graph input file 
+d = read_graph(file)
+
+file.close()
+output_file = "output_google.txt"                   #File in which the output will be stored
+
 start_time = time.time()
-shortest_distances = dijkstra(graph, start_node)
+ds = Single_source_shortest_path(d,start_node)      #Function call
+ds = dict(sorted(ds.items(), key=lambda x:x[1]))    #Sorting the result in according to the node distance from the source nodes
+
 end_time = time.time()
-shortest_distances = sortt(shortest_distances)
 time_taken = end_time-start_time
-print(time_taken)
-write_output_to_file(output_file, shortest_distances,time_taken)
+
+write_output_to_file(output_file,ds,time_taken)
+print("Execution time: {} seconds".format(end_time - start_time))
