@@ -10,7 +10,7 @@ def Single_source_shortest_path(graph, source):             #takes graph and sou
     fringe = [(0, source)]                                      # will Store all possibe node that can be visited from current node
 
     while fringe:
-        current_distance, current_node = heapq.heappop(fringe)      #returns the shortest distance
+        current_distance, current_node = heapq.heappop(fringe)      #returns the shortest distance present in the fringe
 
         if current_node in visited:
             continue
