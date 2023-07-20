@@ -44,14 +44,14 @@ def write_output_to_file(output_file, shortest_distances,time_taken):           
 def read_graph(file):
 
     if file is None:
-        exit(1)         #Some error in opening the file
+        exit(1)         #if there is some error in reading the file
     d = {}
     while True:
         line = file.readline()
         if not line:
             break
         node, neighbor = map(int,line.split())
-        if(node in d):
+        if(node in d):                #store every node present in the graph as a key in the dict
             x = d[node]
             x.append(neighbor)
             if(neighbor in d):
